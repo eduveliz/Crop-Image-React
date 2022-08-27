@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, {useState, useRef} from 'react'
 
 import ReactCrop, {
     centerCrop,
@@ -6,10 +6,11 @@ import ReactCrop, {
     Crop,
     PixelCrop,
 } from 'react-image-crop'
-import { canvasPreview } from './canvasPreview'
-import { useDebounceEffect } from './useDebounceEffect'
+import {canvasPreview} from './canvasPreview'
+import {useDebounceEffect} from './useDebounceEffect'
 
 import 'react-image-crop/dist/ReactCrop.css'
+import {imgPreview} from "./imgPreview";
 
 // This is to demonstate how to make and center a % aspect crop
 // which is a bit trickier so we use some helper functions.
@@ -57,9 +58,15 @@ export default function App() {
 
     function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
         if (aspect) {
-            const { width, height } = e.currentTarget
+            const {width, height} = e.currentTarget
             setCrop(centerAspectCrop(width, height, aspect))
         }
+    }
+
+    function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+        return new Promise((resolve: any) => {
+            canvas.toBlob(resolve)
+        })
     }
 
     useDebounceEffect(
@@ -88,16 +95,16 @@ export default function App() {
         if (aspect) {
             setAspect(undefined)
         } else if (imgRef.current) {
-            const { width, height } = imgRef.current
+            const {width, height} = imgRef.current
             setAspect(16 / 9)
             setCrop(centerAspectCrop(width, height, 16 / 9))
         }
     }
 
     return (
-        <div className="App">
+        <div>
             <div className="Crop-Controls">
-                <input type="file" accept="image/*" onChange={onSelectFile} />
+                <input type="file" accept="image/*" onChange={onSelectFile}/>
                 <div>
                     <label htmlFor="scale-input">Scale: </label>
                     <input
@@ -126,6 +133,17 @@ export default function App() {
                         Toggle aspect {aspect ? 'off' : 'on'}
                     </button>
                 </div>
+
+
+                <div>
+                    <button onClick={() => {
+                        // @ts-ignore
+                        imgPreview(imgRef.current, completedCrop).then(r => console.log(r))
+                    }}>
+                        get image on console
+                    </button>
+                </div>
+
             </div>
             {Boolean(imgSrc) && (
                 <ReactCrop
@@ -138,7 +156,7 @@ export default function App() {
                         ref={imgRef}
                         alt="Crop me"
                         src={imgSrc}
-                        style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
+                        style={{transform: `scale(${scale}) rotate(${rotate}deg)`}}
                         onLoad={onImageLoad}
                     />
                 </ReactCrop>
@@ -156,6 +174,7 @@ export default function App() {
                     />
                 )}
             </div>
+
         </div>
     )
 }

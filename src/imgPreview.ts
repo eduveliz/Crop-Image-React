@@ -9,6 +9,16 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
     })
 }
 
+
+function blobToBase64(blob :any) {
+    return new Promise((resolve, _) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+}
+
+
 // Returns an image source you should set to state and pass
 // `{previewSrc && <img alt="Crop preview" src={previewSrc} />}`
 export async function imgPreview(
@@ -18,13 +28,16 @@ export async function imgPreview(
     rotate = 0,
 ) {
     const canvas = document.createElement('canvas')
-    await canvasPreview(image, canvas, crop, scale, rotate)
+    canvasPreview(image, canvas, crop, scale, rotate)
 
     const blob = await toBlob(canvas)
     if (previewUrl) {
         URL.revokeObjectURL(previewUrl)
     }
 
+    const reader = new FileReader();
     previewUrl = URL.createObjectURL(blob)
+    blobToBase64(blob).then(r=> console.log(r))
+
     return previewUrl
 }
